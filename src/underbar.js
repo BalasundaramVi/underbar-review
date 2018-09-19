@@ -401,6 +401,18 @@
   // Calls the method named by functionOrKey on each value in the list.
   // Note: You will need to learn a bit about .apply to complete this.
   _.invoke = function(collection, functionOrKey, args) {
+    var resultArray = [];
+    if (typeof functionOrKey === 'function') {
+      for (var i = 0; i < collection.length; i++) {
+        resultArray.push(functionOrKey.apply(collection[i]));
+      }
+      return resultArray;
+    } else {
+      for (var i = 0; i < collection.length; i++) {
+        resultArray.push(collection[i][functionOrKey]());
+      }
+      return resultArray;
+    }
   };
 
   // Sort the object's values by a criterion produced by an iterator.
@@ -408,6 +420,23 @@
   // of that string. For example, _.sortBy(people, 'name') should sort
   // an array of people by their name.
   _.sortBy = function(collection, iterator) {
+    return (collection.sort(function(a, b) {
+      var A, B;
+      if (typeof iterator === 'function') {
+        A = iterator(a);
+        B = iterator(b);
+      } else {
+        A = a[iterator];
+        B = b[iterator];
+      }
+      if (A < B) {
+        return -1;
+      }
+      if (A > B) {
+        return 1;
+      }
+      return 0;
+    }))
   };
 
   // Zip together two or more arrays with elements of the same index
@@ -416,6 +445,25 @@
   // Example:
   // _.zip(['a','b','c','d'], [1,2,3]) returns [['a',1], ['b',2], ['c',3], ['d',undefined]]
   _.zip = function() {
+    if (arguments.length === 1) {
+      return(arguments);
+    }
+    var zipArray = [];
+    var arrLength = 0;
+    for (var i = 0; i < arguments.length; i++) {
+      if (arguments[i].length > arrLength) {
+        arrLength = arguments[i].length;
+      }
+    }
+
+    for (var i = 0; i < arrLength; i++) {
+      var newArray = [];
+      for (var j = 0; j < arguments.length; j++) {
+        newArray.push(arguments[j][i]);
+      }
+      zipArray.push(newArray);
+    }
+    return zipArray;
   };
 
   // Takes a multidimensional array and converts it to a one-dimensional array.
@@ -423,16 +471,78 @@
   //
   // Hint: Use Array.isArray to check if something is an array
   _.flatten = function(nestedArray, result) {
+    if (result === undefined) {
+      result = [];
+    }
+    if (!Array.isArray(nestedArray)) {
+      result.push(nestedArray);
+    }
+    for (var i = 0; i < nestedArray.length; i++) {
+      _.flatten(nestedArray[i], result);
+    }
+    return result;
   };
 
   // Takes an arbitrary number of arrays and produces an array that contains
   // every item shared between all the passed-in arrays.
   _.intersection = function() {
+    var hashTable = {};
+
+    for (var i = 0; i < arguments[0].length; i++) {
+      hashTable[arguments[0][i]] = true;
+    }
+
+    for (var i = 1; i < arguments.length; i++) {
+      var testHash = {};
+      for (var j = 0; j < arguments[i].length; j++) {
+        testHash[arguments[i][j]] = true
+      }
+      
+      for (var key in hashTable) {
+        if (testHash[key] !== true) {
+          delete hashTable[key];
+        }
+      }
+    }
+
+    var outputArray = [];
+
+    for (var key in hashTable) {
+      outputArray.push(key);
+    }
+
+    return outputArray;
   };
 
   // Take the difference between one array and a number of other arrays.
   // Only the elements present in just the first array will remain.
   _.difference = function(array) {
+    var hashTable = {};
+
+    for (var i = 0; i < array.length; i++) {
+      hashTable[array[i]] = true;
+    }
+
+    for (var i = 1; i < arguments.length; i++) {
+      var testHash = {};
+      for (var j = 0; j < arguments[i].length; j++) {
+        testHash[arguments[i][j]] = true;
+      }
+      
+      for (var key in hashTable) {
+        if (testHash[key] === true) {
+          delete hashTable[key];
+        }
+      }
+    }
+
+    var outputArray = [];
+
+    for (var key in hashTable) {
+      outputArray.push(Number(key));
+    }
+
+    return outputArray;
   };
 
   // Returns a function, that, when invoked, will only be triggered at most once

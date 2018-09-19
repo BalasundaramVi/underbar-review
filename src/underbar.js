@@ -559,7 +559,7 @@
       } else {
         setTimeout(function() {
           alreadyCalled = false;
-        }, wait)
+        }, wait);
       }
     }
   };
